@@ -49,7 +49,7 @@ namespace Microsoft.SqlTools.Serialization
             serviceProvider.RegisterSingleService(sqlToolsContext);
             serviceProvider.RegisterSingleService(serviceHost);
 
-            SerializationService serializationService = serviceProvider.GetService<SerializationService>();
+            SerializationService serializationService = new SerializationService();
             serializationService.InitializeService(serviceHost);
             serviceProvider.RegisterSingleService(serializationService);
 

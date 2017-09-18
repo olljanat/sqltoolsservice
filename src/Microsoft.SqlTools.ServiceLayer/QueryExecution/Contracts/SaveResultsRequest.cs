@@ -98,6 +98,11 @@ namespace Microsoft.SqlTools.ServiceLayer.QueryExecution.Contracts
         //TODO: define config for save as JSON
     }
 
+    public class SaveResultsGeneralRequestParams: SaveResultsRequestParams
+    {
+        public bool? IncludeHeaders { get; set;}
+    }
+
     /// <summary>
     /// Parameters for the save results result
     /// </summary>

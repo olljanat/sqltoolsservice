@@ -4,6 +4,8 @@
 
 using System;
 using System.IO;
+using System.Reflection;
+using System.Text;
 using Microsoft.SqlTools.Hosting.Utility;
 using Microsoft.SqlTools.ServiceLayer.SqlContext;
 using Microsoft.SqlTools.Utility;
@@ -53,9 +55,27 @@ namespace Microsoft.SqlTools.Serialization
 
                 serviceHost.WaitForExit();
             }
-            catch (Exception e)
+            catch (ReflectionTypeLoadException e)
             {
-                Logger.Write(LogLevel.Error, string.Format("An unhandled exception occurred: {0}", e));
+                Logger.Write(LogLevel.Error, "Log Version 3");
+                StringBuilder sb = new StringBuilder();
+                foreach (Exception exSub in e.LoaderExceptions)
+                {
+                    sb.AppendLine(exSub.Message);
+                    FileNotFoundException exFileNotFound = exSub as FileNotFoundException;
+                    if (exFileNotFound != null)
+                    {                
+                        if(!string.IsNullOrEmpty(exFileNotFound.FusionLog))
+                        {
+                            sb.AppendLine("Fusion Log:");
+                            sb.AppendLine(exFileNotFound.FusionLog);
+                        }
+                    }
+                    sb.AppendLine();
+                }
+                string errorMessage = sb.ToString();
+                Logger.Write(LogLevel.Error, string.Format("An unhandled exception occurred: {0}", errorMessage));
+                Logger.Write(LogLevel.Error, string.Format("Full stack trace:\n{0}", e));
                 Environment.Exit(1);
             }
         }

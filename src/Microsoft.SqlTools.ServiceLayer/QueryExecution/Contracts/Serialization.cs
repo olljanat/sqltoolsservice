@@ -10,18 +10,9 @@ namespace Microsoft.SqlTools.ServiceLayer.QueryExecution.Contracts
     /// <summary>
     /// Class used for storing results and how the results are to be serialized
     /// </summary>
-    public class SaveResultsInfo
+    public class SerializationWriteRequestParameters
     {
-        /// <summary>
-        /// String representation of the type that service is supposed to serialize to
-        ///  E.g. "json" or "csv"
-        /// </summary>
-        public string SaveFormat { get; set; }
-
-        /// <summary>
-        /// Path to file that the serialized results will be stored in
-        /// </summary>
-        public string SavePath { get; set; }
+        public string OwnerUri { get; set; }
 
         /// <summary>
         /// Results that are to be serialized into 'SaveFormat' format
@@ -32,26 +23,12 @@ namespace Microsoft.SqlTools.ServiceLayer.QueryExecution.Contracts
         /// Whether the current set of Rows passed in is the last for this file
         // </summary>
         public bool IsLast { get; set; }
-
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        public SaveResultsInfo(string saveFormat, 
-            string savePath, 
-            DbCellValue[][] rows, 
-            bool isLast)
-        {
-            this.SaveFormat = saveFormat;
-            this.SavePath = savePath;
-            this.Rows = Rows;
-            this.IsLast = isLast;
-        }
     }
 
     public class SaveAsRequest
     {
         public static readonly
-            RequestType<SaveResultsInfo, SaveResultRequestResult> Type =
-            RequestType<SaveResultsInfo, SaveResultRequestResult>.Create("query/saveAs");
+            RequestType<SerializationWriteRequestParameters, SaveResultRequestResult> Type =
+            RequestType<SerializationWriteRequestParameters, SaveResultRequestResult>.Create("query/saveAs");
     }
 }

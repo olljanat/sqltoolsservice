@@ -13,7 +13,7 @@ namespace Microsoft.SqlTools.Hosting.Protocol
 {
     public class RequestContext<TResult> : IEventSender
     {
-        private readonly Message requestMessage;
+        public readonly Message requestMessage;
         private readonly MessageWriter messageWriter;
 
         public RequestContext(Message requestMessage, MessageWriter messageWriter)
