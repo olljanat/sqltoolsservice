@@ -108,9 +108,9 @@ namespace Microsoft.SqlTools.ServiceLayer.Formatter
             };
         }
 
-        private async Task<TextEdit[]> FormatRangeAndReturnEdits(DocumentRangeFormattingParams docFormatParams)
+        private Task<TextEdit[]> FormatRangeAndReturnEdits(DocumentRangeFormattingParams docFormatParams)
         {
-            return await Task.Factory.StartNew(() =>
+            return Task.Factory.StartNew(() =>
             {
                 if (ShouldSkipFormatting(docFormatParams))
                 {
@@ -140,9 +140,9 @@ namespace Microsoft.SqlTools.ServiceLayer.Formatter
             return (LanguageService != null && LanguageService.ShouldSkipNonMssqlFile(docFormatParams.TextDocument.Uri));
         }
 
-        private async Task<TextEdit[]> FormatAndReturnEdits(DocumentFormattingParams docFormatParams)
+        private Task<TextEdit[]> FormatAndReturnEdits(DocumentFormattingParams docFormatParams)
         {            
-            return await Task.Factory.StartNew(() =>
+            return Task.Factory.StartNew(() =>
             {
                 if (ShouldSkipFormatting(docFormatParams))
                 {
@@ -175,10 +175,10 @@ namespace Microsoft.SqlTools.ServiceLayer.Formatter
 
         private FormatOptions GetOptions(DocumentFormattingParams docFormatParams)
         {
-            return MergeFormatOptions(docFormatParams.Options, settings);
+            return MergeFormatOptions(docFormatParams.TextDocument.Uri, docFormatParams.Options, settings);
         }
 
-        internal static FormatOptions MergeFormatOptions(FormattingOptions formatRequestOptions, FormatterSettings settings)
+        internal static FormatOptions MergeFormatOptions(string uri, FormattingOptions formatRequestOptions, FormatterSettings settings)
 
         {
             FormatOptions options = new FormatOptions();
@@ -188,6 +188,14 @@ namespace Microsoft.SqlTools.ServiceLayer.Formatter
                 options.SpacesPerIndent = formatRequestOptions.TabSize;
             }
             UpdateFormatOptionsFromSettings(options, settings);
+
+            var extraSettings = WorkspaceService<SqlToolsSettings>.Instance.TextDocConfigMap.GetValueOrDefault(uri);
+            var extraSettings2 = extraSettings?.SqlTools?.Format ?? null;
+            if (extraSettings2 != null)
+            {
+                UpdateFormatOptionsFromSettings(options, extraSettings2);
+            }
+
             return options;
         }
 

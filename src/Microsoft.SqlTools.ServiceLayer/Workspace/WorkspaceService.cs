@@ -112,6 +112,11 @@ namespace Microsoft.SqlTools.ServiceLayer.Workspace
         /// List of callbacks to call when a text document is closed
         /// </summary>
         private List<TextDocCloseCallback> TextDocCloseCallbacks { get; set; }
+
+        /// <summary>
+        /// Map of configurations for open text documents
+        /// </summary>
+        public Dictionary<string, TConfig> TextDocConfigMap = new Dictionary<string, TConfig>();
  
 
         #endregion
@@ -192,6 +197,37 @@ namespace Microsoft.SqlTools.ServiceLayer.Workspace
             TextDocOpenCallbacks.Add(task);
         }
 
+        public async Task<TConfig> GetWorkspaceConfiguration(string scopeUri)
+        {
+            // Verify that the client can accept workspace/configuration requests
+            var clientCapabilities = ServiceHost.Instance.ClientCapabilities;
+            if (clientCapabilities == null)
+            {
+                return null;
+            }
+            Dictionary<string, object> workspaceCapabilities = clientCapabilities.workspace;
+            if (workspaceCapabilities == null)
+            {
+                return null;
+            }
+            bool workspaceConfigurationCapable = (bool)workspaceCapabilities.GetValueOrDefault("configuration", false);
+            if (!workspaceConfigurationCapable)
+            {
+                return null;
+            }
+
+            var response = await ServiceHost.Instance.SendRequest(GetWorkspaceConfigurationRequest<List<TConfig>>.Type, new ConfigurationParams {
+                items = new ConfigurationItem[]
+                {
+                    new ConfigurationItem {
+                        ScopeUri = scopeUri,
+                        Section = ""
+                    }
+                }
+            }, true);
+            return response[0];
+        }
+
         #endregion
 
         #region Event Handlers
@@ -260,9 +296,25 @@ namespace Microsoft.SqlTools.ServiceLayer.Workspace
                 {
                     return;
                 }
+
                 // Propagate the changes to the event handlers
                 var textDocOpenTasks = TextDocOpenCallbacks.Select(
                     t => t(openedFile, eventContext));
+
+                // Save the configs for that text document
+                GetWorkspaceConfiguration(openParams.TextDocument.Uri).ContinueWith(t =>
+                {
+                    if (t.Exception != null) 
+                    {
+                        Logger.Write(LogLevel.Normal, t.Exception.Flatten().Message);
+                        Logger.Write(LogLevel.Normal, t.Exception.Flatten().StackTrace);
+                    }
+                    else
+                    {
+                        var config = t.Result;
+                        TextDocConfigMap.Add(openParams.TextDocument.Uri, config);
+                    }
+                });
 
                 await Task.WhenAll(textDocOpenTasks);
             }

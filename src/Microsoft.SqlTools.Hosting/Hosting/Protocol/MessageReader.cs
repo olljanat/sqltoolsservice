@@ -110,6 +110,7 @@ namespace Microsoft.SqlTools.Hosting.Protocol
             ShiftBufferBytesAndShrink(readOffset);
 
             // Get the JObject for the JSON content
+            Logger.Write(LogLevel.Normal, messageContent);
             JObject messageObject = JObject.Parse(messageContent);
 
             // Return the parsed message

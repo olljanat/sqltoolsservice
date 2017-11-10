@@ -38,6 +38,7 @@ namespace Microsoft.SqlTools.ServiceLayer.Hosting
         private const int ShutdownTimeoutInSeconds = 120;
         public static readonly string[] CompletionTriggerCharacters = new string[] { ".", "-", ":", "\\", "[", "\"" };
         private IMultiServiceProvider serviceProvider;
+        private ClientCapabilities clientCapabilities;
 
         #region Singleton Instance Code
 
@@ -74,6 +75,18 @@ namespace Microsoft.SqlTools.ServiceLayer.Hosting
             internal set
             {
                 serviceProvider = value;
+            }
+        }
+
+        public ClientCapabilities ClientCapabilities
+        {
+            get
+            {
+                return clientCapabilities;
+            }
+            private set
+            {
+                clientCapabilities = value;
             }
         }
 
@@ -161,6 +174,8 @@ namespace Microsoft.SqlTools.ServiceLayer.Hosting
         /// <returns></returns>
         internal async Task HandleInitializeRequest(InitializeRequest initializeParams, RequestContext<InitializeResult> requestContext)
         {
+            ClientCapabilities = initializeParams.Capabilities;
+
             // Call all tasks that registered on the initialize request
             var initializeTasks = initializeCallbacks.Select(t => t(initializeParams, requestContext));
             await Task.WhenAll(initializeTasks);
