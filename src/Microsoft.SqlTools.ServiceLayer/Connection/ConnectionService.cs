@@ -914,7 +914,8 @@ namespace Microsoft.SqlTools.ServiceLayer.Connection
             var systemDatabases = new[] {"master", "model", "msdb", "tempdb"};
             using (DbCommand command = connection.CreateCommand())
             {
-                command.CommandText = @"SELECT name FROM sys.databases WHERE state_desc='ONLINE' ORDER BY name ASC";
+                // command.CommandText = @"SELECT name FROM sys.databases WHERE state_desc='ONLINE' ORDER BY name ASC";
+                command.CommandText = @"exec sp_my_dbs";
                 command.CommandTimeout = 15;
                 command.CommandType = CommandType.Text; 
 
